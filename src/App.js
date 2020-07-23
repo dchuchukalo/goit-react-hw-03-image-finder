@@ -16,7 +16,8 @@ class App extends Component {
     imagesArr: [],
     currentPage: 1,
     searchQuery: '',
-    isLoading: false,
+    isLoadingArr: false,
+    isLoadingImg: false,
     error: null,
     largeImageLink: '',
     imageName: '',
@@ -57,6 +58,7 @@ class App extends Component {
     this.setState({
       largeImageLink,
       imageName,
+      isLoadingImg: true,
     });
   };
 
@@ -66,11 +68,15 @@ class App extends Component {
     });
   };
 
+  onLoadLargeImg = () => {
+    this.setState({ isLoadingImg: false });
+  };
+
   fetchImages = async () => {
     const { currentPage, searchQuery } = this.state;
     const options = { currentPage, searchQuery };
 
-    this.setState({ isLoading: true, error: null });
+    this.setState({ isLoadingArr: true, error: null });
 
     await imagesApi
       .fetchImages(options)
@@ -82,27 +88,35 @@ class App extends Component {
       })
       .catch(error => this.setState({ error }))
       .finally(() => {
-        this.setState({ isLoading: false });
+        this.setState({ isLoadingArr: false });
       });
   };
 
   render() {
     const {
       imagesArr,
-      isLoading,
+      isLoadingArr,
+      isLoadingImg,
       error,
       largeImageLink,
       imageName,
       noResults,
       searchQuery,
     } = this.state;
-    const shouldRenderloadMoreBtn = imagesArr.length > 0 && !isLoading;
+    const shouldRenderloadMoreBtn = imagesArr.length > 0 && !isLoadingArr;
 
     return (
       <div className={styles.App}>
         {largeImageLink && (
           <Modal onClose={this.onCloseModal}>
-            <img src={largeImageLink} alt={imageName} />
+            <>
+              <Spinner isLoading={isLoadingImg} position="center" />
+              <img
+                onLoad={this.onLoadLargeImg}
+                src={largeImageLink}
+                alt={imageName}
+              />
+            </>
           </Modal>
         )}
         <Searchbar onSubmit={this.onSubmitSearch} />
@@ -110,7 +124,7 @@ class App extends Component {
           <Error text={`Your search ${searchQuery} did not match any image.`} />
         )}
         <ImageGallery imagesArr={imagesArr} onImageClick={this.onImageClick} />
-        <Spinner isLoading={isLoading} />
+        <Spinner isLoading={isLoadingArr} position="bottom" />
         {error && <Error text="Something went wrong. Please try again." />}
         {shouldRenderloadMoreBtn && <Button onClick={this.onClickLoadMore} />}
       </div>
