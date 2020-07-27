@@ -10,6 +10,7 @@ import Modal from './components/Modal';
 import imagesApi from './services/images-api';
 
 import styles from './App.module.css';
+import 'modern-normalize/modern-normalize.css';
 
 class App extends Component {
   state = {
